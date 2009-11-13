@@ -3,7 +3,54 @@ CloEJB: Integrating Clojure and EJB
 
 The CloEJB project seeks to simplify integration of EJB technology with the
 Clojure programming language.  Using Java from within Clojure is easy, and (as
-of version 1.0) Clojure provides the `gen-interface` and `gen-class` macros so
-that Java can use Clojure.  However, there is at least one major deficiency of
-these macros: no support for Java annotations.  As a result, in order to use
-Clojure from an EJB container, you must rely on XML deployment descriptors.
+of version 1.0) Clojure only provides the `gen-interface` and `gen-class`
+macros so that Java can use Clojure.  However, there is at least one major
+deficiency of these macros: no support for Java annotations.  As a result, in
+order to use Clojure from an EJB container, you must rely on XML deployment
+descriptors.
+
+
+Development Roadmap
+-------------------
+
+The following is a rough outline of the development that is proposed for
+CloEJB.  It is subject to change, especially as a result of user demand.
+
+1. Provide rudimentary support for stateless session beans by implementing the
+   following annotations:
+   * @Local
+   * @Remote
+   * @Stateless
+2. Provide rudimentary support for stateful session beans by implementing the
+   following annotations:
+   * @Stateful
+   * @Remove
+3. Support property-based dependency injection using the following annotations:
+   * @EJB
+   * @Resource
+   * @Resources
+4. Add support for message-driven beans by adding the support for the
+   @MessageDriven annotation.
+5. Add support for the basic life cycle callbacks using the following
+   annotations:
+   * @PostConstruct
+   * @PreDestroy
+6. Add support for stateful session bean callbacks using the following
+   annotations:
+   * @PostActivate
+   * @PrePassivate
+7. Add support for transaction management annotations.
+8. Add support for security annotations.
+9. Add support for interceptors.
+10. Add support for life cycle listeners.
+11. Add support for EJB-driven web services
+
+
+Limitations
+-----------
+
+There will be a few limitations of the CloEJB system.  At this time, the
+following limitations are anticipated:
+
+1. No field-based dependency injection, due to limitations within Clojure.
+2. No planned support for EJB technology prior to version 3.0.
