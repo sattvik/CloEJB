@@ -1,0 +1,211 @@
+<?xml version='1.0'?>
+
+<!--
+  Copyright © 2009 Sattvik Software & Technology Resources, Ltd. Co.
+  All rights reserved.
+
+  This program and the accompanying materials are made available under the
+  terms of the Eclipse Public License v1.0 which accompanies this distribution,
+  and is available at http://opensource.org/licenses/eclipse-1.0.php.
+ 
+  By using this software in any fashion, you are agreeing to be bound by the
+  terms of this license.  You must not remove this notice, or any other, from
+  this software.
+-->
+
+<project name='CloEJB' basedir='.' default='all'>
+  <description>
+    CloEJB integrates Clojure with EJB technology.
+  </description>
+
+  <!-- load all properties from files -->
+  <property environment='env'/>
+  <property file='build.properties'/>
+
+  <!-- project properties -->
+  <property name='project.name' value='${ant.project.name}'/>
+  <property name='project.version' value='SNAPSHOT'/>
+  <property name='project.name-ver' value='${project.name}-${project.version}'/>
+
+  <!-- build properties -->
+  <property name='build.debug' value='false'/>
+
+  <!-- source directories -->
+  <property name='src.dir' location='src'/>
+  <property name='main.src.dir' location='${src.dir}/main'/>
+  <property name='test.src.dir' location='${src.dir}/test'/>
+
+  <!-- build directories -->
+  <property name='build.dir' location='build'/>
+  <property name='build.classes.dir' location='${build.dir}/classes'/>
+  <property name='build.test.dir' location='${build.dir}/test'/>
+
+  <!-- test directories -->
+<!--  <property name='test.dir' location='${build.dir}/test'
+      description='Main directory for test artefacts.'/>
+  <property name='test.classes.dir' location='${test.dir}/classes'
+      description='Destination directory for compiled classes of tests.'/>
+  <property name='test.instrument.dir' location='${test.dir}/instrument'
+      description='Destination directory for instrumented class files'/>
+  <property name='test.cobertura.ser' location='${test.dir}/cobertura.ser'
+      description='Data file for Cobertura'/>-->
+
+  <!-- report directories -->
+<!--  <property name="reports.dir" location="${build.dir}/reports"/>
+  <property name="reports.coverage.dir" location="${reports.dir}/coverage"/>
+  <property name="reports.unittest.dir" location="${reports.dir}/unittest"/>-->
+
+  <!-- distribution directories -->
+  <property name='dist.dir' location='dist'/>
+  <property name='dist.doc.dir' location='${dist.dir}/doc'/>
+
+  <!-- distribution targets -->
+  <property name='target.name' value='${project.name-ver}'/>
+  <property name='target.jar' location='${dist.dir}/${target.name}.jar'/>
+  <property name='api.html' location='${dist.doc.dir}/api.html'/>
+
+  <!-- library directories and JARs -->
+  <property name='lib.dir' location='lib'/>
+  <property name='clojure.jar' location='${lib.dir}/clojure.jar'/>
+  <property name='clojure-contrib.jar' location='${lib.dir}/clojure-contrib.jar'/>
+  
+  <!-- tool directories and scripts -->
+  <property name='tools.dir' location='tools'/>
+  <property name='gendocs.clj' location='${tools.dir}/gendocs.clj'/>
+
+  <!-- build classpaths -->
+  <path id='clojure.classpath'>
+    <pathelement location='${clojure.jar}'/>
+  </path>
+
+  <path id='clojure-contrib.classpath'>
+    <path refid='clojure.classpath'/>
+    <pathelement location='${clojure-contrib.jar}'/>
+  </path>
+
+  <path id='build.classpath'>
+    <path refid='clojure.classpath'/>
+    <pathelement location='${main.src.dir}'/>
+    <pathelement location='${build.classes.dir}'/>
+  </path>
+
+  <path id='doc.classpath'>
+    <path refid='clojure-contrib.classpath'/>
+    <pathelement location='${main.src.dir}'/>
+  </path>
+
+  <!-- JAR filesets -->
+  <fileset id='jar.fileset' dir='${build.classes.dir}'>
+    <include name='**/*.class'/>
+  </fileset>
+
+  <fileset id='checksum.fileset' dir='${dist.dir}'>
+    <include name='*.jar'/>
+  </fileset>
+
+  <!-- Main targets -->
+  <target name='all' depends='dist'
+      description='Default target—an alias for dist'/>
+
+  <target name='dist' depends='jar,checksum'
+      description='Creates distribution files.'/>
+
+<!--  <target name='deploy' depends='dist,deploy.glassfish'
+      description='Deploys EJBs to container'>
+    <fail unless='internal.deploy.finished'>
+      Deployment failed due to a missing or invalid container type.
+      Please set the value of the property ‘deploy.container’ to one 
+      of the following: glassfish
+    </fail>
+  </target>-->
+
+<!--  <target name='test' depends='compile,unit-test,coverage-test'
+      description='Run all tests for the package.'/>-->
+
+  <target name='clean'
+      description='Clean generated files.'>
+    <delete dir='${build.dir}'/>
+  </target>
+
+  <target name='distclean' depends='clean'
+      description='Cleans all generated files including distribution files.'>
+    <delete dir='${dist.dir}'/>
+  </target>
+
+
+  <!-- helper targets -->
+  <target name='init'>
+    <tstamp/>
+  </target>
+
+  <target name='compile' depends='compile.clojure'/>
+
+  <target name='compile.clojure' depends='compile.init'>
+    <java
+	classname='clojure.lang.Compile'
+	classpathref='build.classpath'
+	fork='true'
+	failonerror='true'
+	dir='${src.dir}'>
+      <sysproperty key='clojure.compile.path' value='${build.classes.dir}'/>
+      <arg value='org.cloejb.util.interface_adapter'/>
+      <arg value='org.cloejb.util.interface-generator'/>
+      <arg value='org.cloejb.local'/>
+      <arg value='org.cloejb.remote'/>
+    </java>
+  </target>
+
+  <target name='compile.init' depends='init'>
+    <mkdir dir='${build.classes.dir}'/>
+  </target>
+
+  <target name='doc' depends='doc.init'>
+    <java
+	classname='clojure.lang.Script'
+	classpathref='doc.classpath'
+	fork='true'
+	failonerror='true'>
+<!--        dir='${dist.doc.dir}'>-->
+      <arg value='${gendocs.clj}'/>
+      <arg value='--'/>
+      <arg value='--file'/>
+      <arg value='${api.html}'/>
+      <arg value='org.cloejb.local'/>
+      <arg value='org.cloejb.remote'/>
+    </java>
+  </target>
+
+  <target name='doc.init' depends='dist.init'>
+    <mkdir dir='${dist.doc.dir}'/>
+  </target>
+
+  <target name='jar' depends='compile,dist.init'>
+    <jar
+	destfile='${target.jar}'
+	strict='fail'>
+      <fileset refid='jar.fileset'/>
+      <manifest>
+	<attribute name='Implementation-Vendor' value='${project.org}'/>
+	<attribute name='Implementation-Title' value='${project.name}'/>
+	<attribute name='Implementation-Version' value='${project.version}'/>
+      </manifest>
+<!--      <metainf dir='${src.etc.dir}'>
+	<include name='ejb-jar.xml'/>
+	<include name='sun-ejb-jar.xml'/>
+	<include name='persistence.xml'/>
+      </metainf>-->
+    </jar>
+  </target>
+
+  <target name='dist.init'>
+    <mkdir dir='${dist.dir}'/>
+  </target>
+
+  <target name='checksum' depends='jar'>
+    <checksum todir='${dist.dir}'
+	algorithm='SHA-256'
+	fileext='.sha256' format='MD5SUM'>
+      <fileset refid='checksum.fileset'/>
+    </checksum>
+  </target>
+</project>
