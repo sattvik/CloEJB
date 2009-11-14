@@ -22,6 +22,7 @@ above.
 ### Building CloEJB
 
 In order to build CloEJB, you must have the following:
+
 * Apache Ant
 * Clojure 1.0.0
 
