@@ -19,7 +19,7 @@
 "Usage: gendocs.clj [--file FILE] namespace ...
 
 A simple wrapper around the functionality of clojure.contrib.gen-html-docs.
-Generates documentation for the given namespaces
+Generates documentation for the given namespaces.
 ")
 
 (with-command-line
