@@ -12,7 +12,8 @@
 (ns
   #^{:author "Daniel Solano Gómez"
      :doc "Provides a macro to generate local business interfaces."}
-  org.cloejb.local)
+  org.cloejb.local
+  (:require org.cloejb.util.interface-generator))
 
 (def #^{:private true
         :doc "The secret name of the javax.ejb.Remote annotation"}
