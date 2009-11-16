@@ -38,14 +38,11 @@
   <!-- build directories -->
   <property name='build.dir' location='build'/>
   <property name='build.classes.dir' location='${build.dir}/classes'/>
-  <property name='build.test.dir' location='${build.dir}/test'/>
 
   <!-- test directories -->
-<!--  <property name='test.dir' location='${build.dir}/test'
-      description='Main directory for test artefacts.'/>
-  <property name='test.classes.dir' location='${test.dir}/classes'
-      description='Destination directory for compiled classes of tests.'/>
-  <property name='test.instrument.dir' location='${test.dir}/instrument'
+  <property name='test.dir' location='${build.dir}/test'/>
+  <property name='test.classes.dir' location='${test.dir}/classes'/>
+<!--  <property name='test.instrument.dir' location='${test.dir}/instrument'
       description='Destination directory for instrumented class files'/>
   <property name='test.cobertura.ser' location='${test.dir}/cobertura.ser'
       description='Data file for Cobertura'/>-->
@@ -68,10 +65,12 @@
   <property name='lib.dir' location='lib'/>
   <property name='clojure.jar' location='${lib.dir}/clojure.jar'/>
   <property name='clojure-contrib.jar' location='${lib.dir}/clojure-contrib.jar'/>
+  <property name='javaee-api.jar' location='${lib.dir}/javaee-api.jar'/>
   
   <!-- tool directories and scripts -->
   <property name='tools.dir' location='tools'/>
   <property name='gendocs.clj' location='${tools.dir}/gendocs.clj'/>
+  <property name='runtests.clj' location='${tools.dir}/runtests.clj'/>
 
   <!-- build classpaths -->
   <path id='clojure.classpath'>
@@ -83,10 +82,22 @@
     <pathelement location='${clojure-contrib.jar}'/>
   </path>
 
+  <path id='javaee-api.classpath'>
+    <pathelement location='${javaee-api.jar}'/>
+  </path>
+
   <path id='build.classpath'>
     <path refid='clojure.classpath'/>
     <pathelement location='${main.src.dir}'/>
     <pathelement location='${build.classes.dir}'/>
+  </path>
+
+  <path id='unit-test.classpath'>
+    <path refid='clojure-contrib.classpath'/>
+    <path refid='javaee-api.classpath'/>
+    <pathelement location='${build.classes.dir}'/>
+    <pathelement location='${test.classes.dir}'/>
+    <pathelement location='${test.src.dir}'/>
   </path>
 
   <path id='doc.classpath'>
@@ -119,8 +130,8 @@
     </fail>
   </target>-->
 
-<!--  <target name='test' depends='compile,unit-test,coverage-test'
-      description='Run all tests for the package.'/>-->
+  <target name='test' depends='unit-test'
+      description='Run all tests for the package.'/>
 
   <target name='clean'
       description='Clean generated files.'>
@@ -159,15 +170,47 @@
     <mkdir dir='${build.classes.dir}'/>
   </target>
 
+  <target name='unit-test' depends='unit-test.run'/>
+
+  <target name='unit-test.run' depends='unit-test.compile'>
+    <java
+	classname='clojure.main'
+	classpathref='unit-test.classpath'
+	fork='true'
+	failonerror='true'>
+      <arg value='${runtests.clj}'/>
+      <arg value='org.cloejb.local-test'/>
+<!--      <arg value='org.cloejb.remote'/>-->
+    </java>
+  </target>
+
+  <target name='unit-test.compile' depends='unit-test.init,compile'>
+    <java
+	classname='clojure.lang.Compile'
+	classpathref='unit-test.classpath'
+	fork='true'
+	failonerror='true'>
+      <sysproperty key='clojure.compile.path' value='${test.classes.dir}'/>
+      <arg value='org.cloejb.local-test'/>
+<!--      <arg value='org.cloejb.remote'/>-->
+    </java>
+  </target>
+
+  <target name='unit-test.init' depends='test.init'>
+    <mkdir dir='${test.classes.dir}'/>
+  </target>
+
+  <target name='test.init' depends='init'>
+    <mkdir dir='${test.dir}'/>
+  </target>
+
   <target name='doc' depends='doc.init'>
     <java
-	classname='clojure.lang.Script'
+	classname='clojure.main'
 	classpathref='doc.classpath'
 	fork='true'
 	failonerror='true'>
-<!--        dir='${dist.doc.dir}'>-->
       <arg value='${gendocs.clj}'/>
-      <arg value='--'/>
       <arg value='--file'/>
       <arg value='${api.html}'/>
       <arg value='org.cloejb.local'/>
