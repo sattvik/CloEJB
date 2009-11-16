@@ -13,6 +13,7 @@
 (use 
   '(clojure.contrib
      command-line
+     duck-streams
      test-is))
 
 (def #^{:private true} usage
@@ -22,30 +23,30 @@ A simple wrapper around the functionality of clojure.contrib.test-is.  Runs
 tests on the given namespaces.
 ")
 
-;(defn- run-tests [& namespaces]
-;  (let [summary (assoc (apply merge-with + (map test-ns namespaces)) :type :summary)]
-;    (report summary)
-;    summary))
-
 (defn- run-ns-tests
   "Runs the various tests and returns a summary of the results as a map."
-  [namespaces &]
-  (assoc (apply merge-with + (map test-ns namespaces)) :type :summary))
+  [namespaces]
+  (let [ns-symbols (map symbol namespaces)]
+    (do
+      (apply require ns-symbols)
+      (assoc (apply merge-with + (map test-ns ns-symbols)) :type :summary))))
 
 (defn- failures-or-errors?
+  "Returns true if there were failures or errors"
   [summary]
   (not (zero? (+ (:fail summary) (:error summary)))))
-
 
 (with-command-line
   *command-line-args*
   usage
-  [[file "The file to which to write the test report."]
+  [[file  f "The file to which to write the test report."]
+   [depth d "The stack depth to show in the case of an error"]
     namespaces]
-  (let [ns-symbols (map symbol namespaces)]
-    (apply require ns-symbols)
-    (let [summary (run-ns-tests ns-symbols)]
+  (binding [*stack-trace-depth* (if (nil? depth) nil (Integer/parseInt depth))
+            *test-out* (if (nil? file) *out* (writer file))]
+    (let [summary (run-ns-tests namespaces)]
       (do
         (report summary)
+        (when (not (nil? file)) (.close *test-out*))
         (when (failures-or-errors? summary)
           (System/exit 1))))))
