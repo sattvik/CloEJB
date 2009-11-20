@@ -42,11 +42,11 @@ tests on the given namespaces.
   [[file  f "The file to which to write the test report."]
    [depth d "The stack depth to show in the case of an error"]
     namespaces]
-  (binding [*stack-trace-depth* (if (nil? depth) nil (Integer/parseInt depth))
+  (binding [*stack-trace-depth* (when depth (Integer/parseInt depth))
             *test-out* (if (nil? file) *out* (writer file))]
     (let [summary (run-ns-tests namespaces)]
       (do
         (report summary)
-        (when (not (nil? file)) (.close *test-out*))
+        (when file (.close *test-out*))
         (when (failures-or-errors? summary)
           (System/exit 1))))))
