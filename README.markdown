@@ -24,9 +24,9 @@ The following packages are required to build, document, and test CloEJB:
 
 * Apache Ant 1.7.0 or above
 * Clojure 1.0.0
+* Java EE 5 API JAR
 * Clojure-contrib (Clojure 1.0 compatible), needed for documentation and unit
   testing
-* Java EE 5 API JAR, needed for unit testing
 
 
 Development Roadmap
