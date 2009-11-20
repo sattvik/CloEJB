@@ -7,7 +7,7 @@
   This program and the accompanying materials are made available under the
   terms of the Eclipse Public License v1.0 which accompanies this distribution,
   and is available at http://opensource.org/licenses/eclipse-1.0.php.
- 
+
   By using this software in any fashion, you are agreeing to be bound by the
   terms of this license.  You must not remove this notice, or any other, from
   this software.
@@ -66,7 +66,7 @@
   <property name='clojure.jar' location='${lib.dir}/clojure.jar'/>
   <property name='clojure-contrib.jar' location='${lib.dir}/clojure-contrib.jar'/>
   <property name='javaee-api.jar' location='${lib.dir}/javaee-api.jar'/>
-  
+
   <!-- tool directories and scripts -->
   <property name='tools.dir' location='tools'/>
   <property name='gendocs.clj' location='${tools.dir}/gendocs.clj'/>
@@ -88,6 +88,7 @@
 
   <path id='build.classpath'>
     <path refid='clojure.classpath'/>
+    <path refid='javaee-api.classpath'/>
     <pathelement location='${main.src.dir}'/>
     <pathelement location='${build.classes.dir}'/>
   </path>
@@ -121,15 +122,6 @@
   <target name='dist' depends='jar,checksum'
       description='Creates distribution files.'/>
 
-<!--  <target name='deploy' depends='dist,deploy.glassfish'
-      description='Deploys EJBs to container'>
-    <fail unless='internal.deploy.finished'>
-      Deployment failed due to a missing or invalid container type.
-      Please set the value of the property ‘deploy.container’ to one 
-      of the following: glassfish
-    </fail>
-  </target>-->
-
   <target name='test' depends='unit-test'
       description='Run all tests for the package.'/>
 
@@ -159,10 +151,11 @@
 	failonerror='true'
 	dir='${src.dir}'>
       <sysproperty key='clojure.compile.path' value='${build.classes.dir}'/>
-      <arg value='org.cloejb.util.interface_adapter'/>
-      <arg value='org.cloejb.util.interface-generator'/>
+      <arg value='org.cloejb.util.annotation-class-adapter'/>
+      <arg value='org.cloejb.util.generator'/>
       <arg value='org.cloejb.local'/>
       <arg value='org.cloejb.remote'/>
+      <arg value='org.cloejb.stateless'/>
     </java>
   </target>
 
@@ -179,8 +172,9 @@
 	fork='true'
 	failonerror='true'>
       <arg value='${runtests.clj}'/>
-      <arg value='org.cloejb.local-test'/>
-      <arg value='org.cloejb.remote-test'/>
+      <arg value='org.cloejb.test.unit.local'/>
+      <arg value='org.cloejb.test.unit.remote'/>
+      <arg value='org.cloejb.test.unit.stateless'/>
     </java>
   </target>
 
@@ -191,8 +185,10 @@
 	fork='true'
 	failonerror='true'>
       <sysproperty key='clojure.compile.path' value='${test.classes.dir}'/>
-      <arg value='org.cloejb.local-test'/>
-      <arg value='org.cloejb.remote-test'/>
+      <arg value='org.cloejb.test.unit.util.reflective-class-tester'/>
+      <arg value='org.cloejb.test.unit.local'/>
+      <arg value='org.cloejb.test.unit.remote'/>
+      <arg value='org.cloejb.test.unit.stateless'/>
     </java>
   </target>
 

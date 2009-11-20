@@ -13,16 +13,13 @@
   #^{:author "Daniel Solano Gómez"
      :doc "Provides a macro to generate local business interfaces."}
   org.cloejb.local
-  (:require org.cloejb.util.interface-generator))
-
-(def #^{:private true
-        :doc "The secret name of the javax.ejb.Remote annotation"}
-  javax_ejb_Local "Ljavax/ejb/Local;")
+  (:import javax.ejb.Local)
+  (:require org.cloejb.util.generator))
 
 (defmacro gen-local-interface
   "Generates a local interface.  This macro takes the same arguments as
   Clojure’s gen-interface macro.  The compiled interface will contain a
   @javax.ejb.Local annotation."
   [& options]
-  (let [gen-ejb-interface (ns-resolve 'org.cloejb.util.interface-generator 'gen-ejb-interface)]
-    (apply gen-ejb-interface javax_ejb_Local options)))
+  (let [gen-ejb-interface (ns-resolve 'org.cloejb.util.generator 'gen-annotated)]
+    (apply gen-ejb-interface :interface { Local nil } options)))

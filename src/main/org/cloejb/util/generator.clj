@@ -1,6 +1,6 @@
 ; Copyright © 2009 Sattvik Software & Technology Resources, Ltd. Co.
 ; All rights reserved.
-; 
+;
 ; This program and the accompanying materials are made available under the
 ; terms of the Eclipse Public License v1.0 which accompanies this distribution,
 ; and is available at http://opensource.org/licenses/eclipse-1.0.php.
@@ -11,28 +11,30 @@
 
 (ns
   #^{:author "Daniel Solano Gómez"
-     :doc "Provides utilities for generating EJB business interfaces."
+     :doc "Provides utilities for generating annotated classes and interfaces"
      :private true}
-  org.cloejb.util.interface-generator
+  org.cloejb.util.generator
   (:import
      (clojure.asm ClassReader ClassWriter)
-     (org.cloejb.util interface_adapter)))
+     (org.cloejb.util annotation_class_adapter)))
 
 (def
-  #^{:doc "Reference to private clojure.core/generate-interface function"
-     :private true }
-  generate-interface
-  (ns-resolve 'clojure.core 'generate-interface))
+  #^{:doc "A map of type, i.e. class or interface, to a function that will
+          generate said type."
+     :private true}
+  generator
+  {:interface (ns-resolve 'clojure.core 'generate-interface)
+   :class (ns-resolve 'clojure.core 'generate-class)})
 
-(defn- gen-ejb-interface
-  "Generates an EJB business interface of the given type."
-  [type & options]
+(defn- gen-annotated
+  "Generates an annotated class or interface with the given annotations."
+  [type annotations & options]
   (when *compile-files*
     (let [options-map (apply hash-map options)
-          [cname bytecode] (generate-interface options-map)
+          [cname bytecode] ((generator type) options-map)
           class-reader (new ClassReader bytecode)
           class-writer (new ClassWriter class-reader 0)
-          class-adapter (new org.cloejb.util.interface_adapter class-writer type)]
+          class-adapter (new org.cloejb.util.annotation_class_adapter class-writer annotations)]
       (.accept class-reader class-adapter 0)
       (let [new-bytecode (.toByteArray class-writer)]
         (clojure.lang.Compiler/writeClassFile cname new-bytecode)))))
